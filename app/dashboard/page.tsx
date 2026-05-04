@@ -112,7 +112,7 @@ export default function DashboardPage() {
               </defs>
               <XAxis dataKey="label" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-              <Tooltip formatter={(v: number) => [`${v.toLocaleString()} kg`, 'Volume']} />
+              <Tooltip formatter={(v) => [`${Number(v).toLocaleString()} kg`, 'Volume']} />
               <Area type="monotone" dataKey="volume" stroke="#111827" strokeWidth={2} fill="url(#volGrad)" />
             </AreaChart>
           </ResponsiveContainer>
