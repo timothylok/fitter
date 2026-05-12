@@ -19,6 +19,11 @@ export async function GET(request: NextRequest) {
 
   const admin = createAdminClient()
 
+  const { data: prof } = await admin.from('profiles').select('role').eq('id', user.id).single()
+  if (prof?.role !== 'trainer' && prof?.role !== 'admin') {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+  }
+
   const [{ data: users, error: usersError }, { data: workouts, error: workoutsError }] =
     await Promise.all([
       admin.from('profiles').select('id, name, email, goal_template'),

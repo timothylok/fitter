@@ -9,19 +9,18 @@ const TABS = [
   { href: '/dashboard', label: 'Home', icon: '⊞' },
   { href: '/workouts', label: 'Workouts', icon: '↑' },
   { href: '/goals', label: 'Goals', icon: '◎' },
-  { href: '/trainer', label: 'Trainer', icon: '♟' },
 ]
 
 export default function BottomNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [role, setRole] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return
       supabase.from('profiles').select('role').eq('id', session.user.id).single()
-        .then(({ data }) => setIsAdmin(data?.role === 'admin'))
+        .then(({ data }) => setRole(data?.role ?? null))
     })
   }, [])
 
@@ -32,7 +31,11 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center z-40">
-      {[...TABS, ...(isAdmin ? [{ href: '/admin', label: 'Admin', icon: '⚙' }] : [])].map(t => {
+      {[
+        ...TABS,
+        ...(role === 'trainer' || role === 'admin' ? [{ href: '/trainer', label: 'Trainer', icon: '♟' }] : []),
+        ...(role === 'admin' ? [{ href: '/admin', label: 'Admin', icon: '⚙' }] : []),
+      ].map(t => {
         const active = pathname === t.href
         return (
           <Link

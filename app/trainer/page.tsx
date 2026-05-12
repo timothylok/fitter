@@ -36,6 +36,15 @@ export default function TrainerPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.replace('/login'); return }
 
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+      if (prof?.role !== 'trainer' && prof?.role !== 'admin') {
+        router.replace('/dashboard'); return
+      }
+
       const res = await fetch('/api/trainer/users', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
