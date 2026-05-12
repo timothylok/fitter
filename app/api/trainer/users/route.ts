@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   const [{ data: users, error: usersError }, { data: workouts, error: workoutsError }] =
     await Promise.all([
-      admin.from('users').select('id, name, email, goal_template'),
+      admin.from('profiles').select('id, name, email, goal_template'),
       admin
         .from('workouts')
         .select('user_id, date')

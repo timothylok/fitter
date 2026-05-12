@@ -27,7 +27,7 @@ export default function OnboardingPage() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { router.replace('/login'); return }
 
-    const { error } = await supabase.from('users').insert({
+    const { error } = await supabase.from('profiles').insert({
       id: session.user.id,
       email: session.user.email,
       name: name.trim(),

@@ -32,7 +32,7 @@ export default function GoalsPage() {
       setUserId(session.user.id)
 
       const [{ data: prof }, workoutsRes] = await Promise.all([
-        supabase.from('users').select('goal_template').eq('id', session.user.id).single(),
+        supabase.from('profiles').select('goal_template').eq('id', session.user.id).single(),
         fetch('/api/workouts', { headers: { Authorization: `Bearer ${session.access_token}` } }),
       ])
 
@@ -55,7 +55,7 @@ export default function GoalsPage() {
   async function handleSave() {
     if (!userId || selected === current) return
     setSaving(true)
-    await supabase.from('users').update({ goal_template: selected }).eq('id', userId)
+    await supabase.from('profiles').update({ goal_template: selected }).eq('id', userId)
     setCurrent(selected)
     setSaving(false)
   }

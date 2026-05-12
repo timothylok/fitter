@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
@@ -14,6 +15,15 @@ const TABS = [
 export default function BottomNav() {
   const pathname = usePathname()
   const router = useRouter()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return
+      supabase.from('profiles').select('role').eq('id', session.user.id).single()
+        .then(({ data }) => setIsAdmin(data?.role === 'admin'))
+    })
+  }, [])
 
   async function handleSignOut() {
     await supabase.auth.signOut()
@@ -22,7 +32,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center z-40">
-      {TABS.map(t => {
+      {[...TABS, ...(isAdmin ? [{ href: '/admin', label: 'Admin', icon: '⚙' }] : [])].map(t => {
         const active = pathname === t.href
         return (
           <Link

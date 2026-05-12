@@ -165,7 +165,7 @@ export default function AddWorkoutModal({ open, onClose, onSaved }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
               <input
@@ -189,19 +189,33 @@ export default function AddWorkoutModal({ open, onClose, onSaved }: Props) {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">RPE (1–10)</label>
-              <input
-                type="number"
-                min={1}
-                max={10}
-                step={0.5}
-                value={form.rpe}
-                onChange={e => set('rpe', e.target.value)}
-                placeholder="—"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-              />
+          </div>
+
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <label className="text-sm font-medium text-gray-700">RPE (1–10)</label>
+              <div className="relative group">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-xs cursor-default select-none">?</span>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 bg-gray-900 text-white text-xs rounded-lg px-3 py-2.5 hidden group-hover:block z-10 leading-relaxed pointer-events-none">
+                  RPE is a simple effort scale.<br />
+                  Low number = easy.<br />
+                  High number = hard.<br />
+                  RPE 10 means you couldn&apos;t do another rep.
+                  <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                </div>
+              </div>
             </div>
+            <input
+              type="number"
+              min={1}
+              max={10}
+              step={0.5}
+              value={form.rpe}
+              onChange={e => set('rpe', e.target.value)}
+              placeholder="—"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            />
+            <p className="mt-1 text-xs text-gray-400">How hard did this set feel? 1 = very easy, 10 = max effort.</p>
           </div>
 
           <div>

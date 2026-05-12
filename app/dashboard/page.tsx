@@ -35,7 +35,7 @@ export default function DashboardPage() {
       if (!session) { router.replace('/login'); return }
 
       const [{ data: prof }, workoutsRes] = await Promise.all([
-        supabase.from('users').select('name, goal_template').eq('id', session.user.id).single(),
+        supabase.from('profiles').select('name, goal_template').eq('id', session.user.id).single(),
         fetch('/api/workouts', { headers: { Authorization: `Bearer ${session.access_token}` } }),
       ])
 
