@@ -8,9 +8,11 @@ import Link from 'next/link'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '@/lib/supabase'
 import { computeWeeklyKPIs, computeWeeklyTrend } from '@/lib/kpi'
-import Avatar from '@/components/Avatar'
+import AvatarWithAccessories from '@/components/AvatarWithAccessories'
 import BottomNav from '@/components/BottomNav'
 import Spinner from '@/components/Spinner'
+import { fetchUserAccessories } from '@/lib/accessories'
+import type { Accessory } from '@/lib/accessories'
 import type { Workout, WeeklyKPIs, GoalTemplate } from '@/lib/types'
 
 const GOAL_LABELS: Record<GoalTemplate, string> = {
@@ -31,6 +33,7 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [kpis, setKpis] = useState<WeeklyKPIs | null>(null)
   const [trend, setTrend] = useState<{ label: string; volume: number }[]>([])
+  const [accessories, setAccessories] = useState<Accessory[]>([])
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -38,10 +41,12 @@ export default function DashboardPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.replace('/login'); return }
 
-      const [{ data: prof }, workoutsRes] = await Promise.all([
+      const [{ data: prof }, workoutsRes, accs] = await Promise.all([
         supabase.from('profiles').select('name, goal_template, avatar_style, avatar_seed').eq('id', session.user.id).single(),
         fetch('/api/workouts', { headers: { Authorization: `Bearer ${session.access_token}` } }),
+        fetchUserAccessories(session.user.id, supabase),
       ])
+      setAccessories(accs)
 
       if (!prof) { router.replace('/onboarding'); return }
       setProfile(prof)
@@ -71,7 +76,7 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Link href="/profile">
-              <Avatar style={profile?.avatar_style} seed={profile?.avatar_seed} name={profile?.name ?? ''} size={48} />
+              <AvatarWithAccessories style={profile?.avatar_style} seed={profile?.avatar_seed} name={profile?.name ?? ''} accessories={accessories} size={48} />
             </Link>
             <div>
               <h1 className="text-2xl font-semibold">Hey, {profile?.name}</h1>

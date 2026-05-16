@@ -5,7 +5,8 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import Avatar from '@/components/Avatar'
+import AvatarWithAccessories from '@/components/AvatarWithAccessories'
+import type { Accessory } from '@/lib/accessories'
 import BottomNav from '@/components/BottomNav'
 import Spinner from '@/components/Spinner'
 import type { GoalTemplate } from '@/lib/types'
@@ -17,6 +18,7 @@ interface ClientRow {
   goal_template: GoalTemplate | null
   avatar_style: string | null
   avatar_seed: string | null
+  accessories: Accessory[]
   sessionsThisWeek: number
   lastWorkout: string | null
   atRisk: boolean
@@ -88,7 +90,7 @@ export default function TrainerPage() {
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
-                    <Avatar style={c.avatar_style} seed={c.avatar_seed} name={c.name} size={40} />
+                    <AvatarWithAccessories style={c.avatar_style} seed={c.avatar_seed} name={c.name} accessories={c.accessories} size={40} />
                     <div>
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{c.name}</p>
@@ -106,9 +108,17 @@ export default function TrainerPage() {
                   </span>
                 </div>
 
-                <div className="flex gap-6 mt-3 text-sm">
-                  <Stat label="Sessions this week" value={c.sessionsThisWeek} />
-                  <Stat label="Last workout" value={c.lastWorkout ?? 'Never'} />
+                <div className="flex items-end justify-between mt-3">
+                  <div className="flex gap-6 text-sm">
+                    <Stat label="Sessions this week" value={c.sessionsThisWeek} />
+                    <Stat label="Last workout" value={c.lastWorkout ?? 'Never'} />
+                  </div>
+                  <button
+                    onClick={() => router.push(`/trainer/users/${c.id}/award`)}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 font-medium hover:bg-blue-100 transition-colors"
+                  >
+                    Award Accessory
+                  </button>
                 </div>
               </div>
             ))}

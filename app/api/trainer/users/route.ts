@@ -24,14 +24,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
   }
 
-  const [{ data: users, error: usersError }, { data: workouts, error: workoutsError }] =
+  const [{ data: users, error: usersError }, { data: workouts, error: workoutsError }, { data: rawUserAccs }, { data: allAccs }] =
     await Promise.all([
       admin.from('profiles').select('id, name, email, goal_template, avatar_style, avatar_seed'),
       admin
         .from('workouts')
         .select('user_id, date')
         .gte('date', new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]),
+      admin.from('user_accessories').select('user_id, accessory_id'),
+      admin.from('avatar_accessories').select('id, name, svg_url, rarity'),
     ])
+
+  const accMap = new Map((allAccs ?? []).map(a => [a.id, a]))
 
   if (usersError || workoutsError) {
     console.error('[GET /api/trainer/users]', usersError ?? workoutsError)
@@ -50,7 +54,11 @@ export async function GET(request: NextRequest) {
     const lastWorkout = allDates[allDates.length - 1] ?? null
     const atRisk = !lastWorkout || lastWorkout < atRiskStr
 
-    return { id: u.id, name: u.name, email: u.email, goal_template: u.goal_template, avatar_style: u.avatar_style, avatar_seed: u.avatar_seed, sessionsThisWeek, lastWorkout, atRisk }
+    const accessories = ((rawUserAccs ?? []) as any[])
+      .filter(a => a.user_id === u.id)
+      .map(a => accMap.get(a.accessory_id))
+      .filter(Boolean)
+    return { id: u.id, name: u.name, email: u.email, goal_template: u.goal_template, avatar_style: u.avatar_style, avatar_seed: u.avatar_seed, sessionsThisWeek, lastWorkout, atRisk, accessories }
   })
 
   return NextResponse.json({ success: true, data })

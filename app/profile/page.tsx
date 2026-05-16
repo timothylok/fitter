@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import Avatar from '@/components/Avatar'
+import AvatarWithAccessories from '@/components/AvatarWithAccessories'
 import AvatarPicker from '@/components/AvatarPicker'
+import { fetchUserAccessories } from '@/lib/accessories'
+import type { Accessory } from '@/lib/accessories'
 import BottomNav from '@/components/BottomNav'
 import Spinner from '@/components/Spinner'
 
@@ -23,6 +25,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [selected, setSelected] = useState<AvatarOption | null>(null)
+  const [accessories, setAccessories] = useState<Accessory[]>([])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -31,14 +34,14 @@ export default function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.replace('/login'); return }
 
-      const { data } = await supabase
-        .from('profiles')
-        .select('name, avatar_style, avatar_seed')
-        .eq('id', session.user.id)
-        .single()
+      const [{ data }, accs] = await Promise.all([
+        supabase.from('profiles').select('name, avatar_style, avatar_seed').eq('id', session.user.id).single(),
+        fetchUserAccessories(session.user.id, supabase),
+      ])
 
       if (!data) { router.replace('/onboarding'); return }
       setProfile(data)
+      setAccessories(accs)
       if (data.avatar_style && data.avatar_seed) {
         setSelected({ style: data.avatar_style, seed: data.avatar_seed })
       }
@@ -74,7 +77,7 @@ export default function ProfilePage() {
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
 
         <div className="flex items-center gap-4">
-          <Avatar style={selected?.style} seed={selected?.seed} name={profile.name} size={72} />
+          <AvatarWithAccessories style={selected?.style} seed={selected?.seed} name={profile.name} accessories={accessories} size={72} />
           <div>
             <h1 className="text-2xl font-semibold">{profile.name}</h1>
             <p className="text-sm text-gray-400">Choose an avatar below</p>
