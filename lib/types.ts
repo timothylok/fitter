@@ -19,6 +19,8 @@ export interface User {
   goal_template: GoalTemplate | null
   username: string | null
   role: UserRole
+  avatar_style?: string | null
+  avatar_seed?: string | null
   metadata: Record<string, unknown>
   created_at: string
   updated_at: string

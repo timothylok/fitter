@@ -5,10 +5,11 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import Avatar from '@/components/Avatar'
 import BottomNav from '@/components/BottomNav'
 import Spinner from '@/components/Spinner'
 
-interface Profile { id: string; name: string; email: string }
+interface Profile { id: string; name: string; email: string; avatar_style: string | null; avatar_seed: string | null }
 interface Assignment { id: string; user_id: string; trainer_id: string }
 
 export default function AdminPage() {
@@ -97,9 +98,12 @@ export default function AdminPage() {
 
           return (
             <div key={user.id} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
-              <div>
-                <p className="font-medium">{user.name}</p>
-                <p className="text-sm text-gray-400">{user.email}</p>
+              <div className="flex items-center gap-3">
+                <Avatar style={user.avatar_style} seed={user.avatar_seed} name={user.name} size={40} />
+                <div>
+                  <p className="font-medium">{user.name}</p>
+                  <p className="text-sm text-gray-400">{user.email}</p>
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-2 items-center">

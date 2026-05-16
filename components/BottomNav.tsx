@@ -9,6 +9,7 @@ const TABS = [
   { href: '/dashboard', label: 'Home', icon: '⊞' },
   { href: '/workouts', label: 'Workouts', icon: '↑' },
   { href: '/goals', label: 'Goals', icon: '◎' },
+  { href: '/profile', label: 'Profile', icon: '○' },
 ]
 
 export default function BottomNav() {

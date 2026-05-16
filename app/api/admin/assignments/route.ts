@@ -25,8 +25,8 @@ export async function GET(request: NextRequest) {
 
   const admin = createAdminClient()
   const [{ data: users }, { data: trainers }, { data: assignments }] = await Promise.all([
-    admin.from('profiles').select('id, name, email').eq('role', 'user').order('name'),
-    admin.from('profiles').select('id, name, email').eq('role', 'trainer').order('name'),
+    admin.from('profiles').select('id, name, email, avatar_style, avatar_seed').eq('role', 'user').order('name'),
+    admin.from('profiles').select('id, name, email, avatar_style, avatar_seed').eq('role', 'trainer').order('name'),
     admin.from('trainer_assignments').select('id, user_id, trainer_id'),
   ])
 

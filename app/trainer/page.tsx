@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import Avatar from '@/components/Avatar'
 import BottomNav from '@/components/BottomNav'
 import Spinner from '@/components/Spinner'
 import type { GoalTemplate } from '@/lib/types'
@@ -14,6 +15,8 @@ interface ClientRow {
   name: string
   email: string
   goal_template: GoalTemplate | null
+  avatar_style: string | null
+  avatar_seed: string | null
   sessionsThisWeek: number
   lastWorkout: string | null
   atRisk: boolean
@@ -84,7 +87,9 @@ export default function TrainerPage() {
                 className={`bg-white rounded-xl border p-4 ${c.atRisk ? 'border-red-200' : 'border-gray-200'}`}
               >
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex items-center gap-3">
+                    <Avatar style={c.avatar_style} seed={c.avatar_seed} name={c.name} size={40} />
+                    <div>
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{c.name}</p>
                       {c.atRisk && (
@@ -94,6 +99,7 @@ export default function TrainerPage() {
                       )}
                     </div>
                     <p className="text-sm text-gray-400">{c.email}</p>
+                    </div>
                   </div>
                   <span className="text-xs text-gray-400">
                     {c.goal_template ? GOAL_LABELS[c.goal_template] : '—'}

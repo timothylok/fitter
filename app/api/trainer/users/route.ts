@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   const [{ data: users, error: usersError }, { data: workouts, error: workoutsError }] =
     await Promise.all([
-      admin.from('profiles').select('id, name, email, goal_template'),
+      admin.from('profiles').select('id, name, email, goal_template, avatar_style, avatar_seed'),
       admin
         .from('workouts')
         .select('user_id, date')
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     const lastWorkout = allDates[allDates.length - 1] ?? null
     const atRisk = !lastWorkout || lastWorkout < atRiskStr
 
-    return { id: u.id, name: u.name, email: u.email, goal_template: u.goal_template, sessionsThisWeek, lastWorkout, atRisk }
+    return { id: u.id, name: u.name, email: u.email, goal_template: u.goal_template, avatar_style: u.avatar_style, avatar_seed: u.avatar_seed, sessionsThisWeek, lastWorkout, atRisk }
   })
 
   return NextResponse.json({ success: true, data })

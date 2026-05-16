@@ -44,6 +44,12 @@ function computeGoalProgress(workouts: Workout[], goalTemplate?: GoalTemplate | 
   return Math.min(100, Math.round((frequency / target) * 100))
 }
 
+function toDateStr(d: Date): string {
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
 export function computeWeeklyTrend(
   workouts: Workout[],
   weeks = 6
@@ -51,20 +57,29 @@ export function computeWeeklyTrend(
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  return Array.from({ length: weeks }, (_, i) => {
-    const weekEnd = new Date(today)
-    weekEnd.setDate(today.getDate() - i * 7)
-    const weekStart = new Date(weekEnd)
-    weekStart.setDate(weekEnd.getDate() - 6)
+  // Anchor to the most recent Monday so windows are calendar weeks (Mon–Sun)
+  const dayOfWeek = today.getDay()
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+  const currentMonday = new Date(today)
+  currentMonday.setDate(today.getDate() - daysToMonday)
 
-    const endStr = weekEnd.toISOString().split('T')[0]
-    const startStr = weekStart.toISOString().split('T')[0]
+  return Array.from({ length: weeks }, (_, i) => {
+    const weekStart = new Date(currentMonday)
+    weekStart.setDate(currentMonday.getDate() - i * 7)
+    const weekEnd = new Date(weekStart)
+    weekEnd.setDate(weekStart.getDate() + 6)
+
+    const startStr = toDateStr(weekStart)
+    // Current week ends today, not next Sunday
+    const endStr = i === 0 ? toDateStr(today) : toDateStr(weekEnd)
 
     const volume = workouts
       .filter(w => w.date >= startStr && w.date <= endStr)
       .reduce((sum, w) => sum + w.sets * w.reps * (w.weight ?? 0), 0)
 
-    const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const label = i === 0
+      ? 'This week'
+      : weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     return { label, volume }
   }).reverse()
 }

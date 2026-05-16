@@ -4,9 +4,11 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '@/lib/supabase'
 import { computeWeeklyKPIs, computeWeeklyTrend } from '@/lib/kpi'
+import Avatar from '@/components/Avatar'
 import BottomNav from '@/components/BottomNav'
 import Spinner from '@/components/Spinner'
 import type { Workout, WeeklyKPIs, GoalTemplate } from '@/lib/types'
@@ -20,6 +22,8 @@ const GOAL_LABELS: Record<GoalTemplate, string> = {
 interface UserProfile {
   name: string
   goal_template: GoalTemplate | null
+  avatar_style: string | null
+  avatar_seed: string | null
 }
 
 export default function DashboardPage() {
@@ -35,7 +39,7 @@ export default function DashboardPage() {
       if (!session) { router.replace('/login'); return }
 
       const [{ data: prof }, workoutsRes] = await Promise.all([
-        supabase.from('profiles').select('name, goal_template').eq('id', session.user.id).single(),
+        supabase.from('profiles').select('name, goal_template, avatar_style, avatar_seed').eq('id', session.user.id).single(),
         fetch('/api/workouts', { headers: { Authorization: `Bearer ${session.access_token}` } }),
       ])
 
@@ -65,9 +69,14 @@ export default function DashboardPage() {
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
 
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-semibold">Hey, {profile?.name}</h1>
-            <p className="text-sm text-gray-400">{goalLabel}</p>
+          <div className="flex items-center gap-3">
+            <Link href="/profile">
+              <Avatar style={profile?.avatar_style} seed={profile?.avatar_seed} name={profile?.name ?? ''} size={48} />
+            </Link>
+            <div>
+              <h1 className="text-2xl font-semibold">Hey, {profile?.name}</h1>
+              <p className="text-sm text-gray-400">{goalLabel}</p>
+            </div>
           </div>
           <a
             href="/workouts"
@@ -103,7 +112,7 @@ export default function DashboardPage() {
         )}
 
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-sm font-medium mb-4">Weekly volume — last 6 weeks</p>
+          <p className="text-sm font-medium mb-4">Weekly volume</p>
           <ResponsiveContainer width="100%" height={160}>
             <AreaChart data={trend} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <defs>
