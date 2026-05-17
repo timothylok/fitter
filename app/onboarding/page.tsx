@@ -38,6 +38,11 @@ export default function OnboardingPage() {
       setError(error.message)
       setLoading(false)
     } else {
+      fetch('/api/email/welcome', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      }).catch(() => {})
+
       router.replace('/dashboard')
     }
   }

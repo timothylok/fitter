@@ -24,15 +24,16 @@ export async function GET(request: NextRequest) {
   if (!await getAdminUser(token)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
 
   const admin = createAdminClient()
-  const [{ data: users }, { data: trainers }, { data: assignments }] = await Promise.all([
+  const [{ data: users }, { data: trainers }, { data: admins }, { data: assignments }] = await Promise.all([
     admin.from('profiles').select('id, name, email, avatar_style, avatar_seed').eq('role', 'user').order('name'),
     admin.from('profiles').select('id, name, email, avatar_style, avatar_seed').eq('role', 'trainer').order('name'),
+    admin.from('profiles').select('id, name, email, avatar_style, avatar_seed').eq('role', 'admin').order('name'),
     admin.from('trainer_assignments').select('id, user_id, trainer_id'),
   ])
 
   return NextResponse.json({
     success: true,
-    data: { users: users ?? [], trainers: trainers ?? [], assignments: assignments ?? [] },
+    data: { users: users ?? [], trainers: trainers ?? [], admins: admins ?? [], assignments: assignments ?? [] },
   })
 }
 

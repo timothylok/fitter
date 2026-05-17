@@ -16,9 +16,12 @@ export default function AdminPage() {
   const router = useRouter()
   const [users, setUsers] = useState<Profile[]>([])
   const [trainers, setTrainers] = useState<Profile[]>([])
+  const [admins, setAdmins] = useState<Profile[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
 
   useEffect(() => {
     async function init() {
@@ -41,6 +44,7 @@ export default function AdminPage() {
 
       setUsers(json.data.users)
       setTrainers(json.data.trainers)
+      setAdmins(json.data.admins)
       setAssignments(json.data.assignments)
       setReady(true)
     }
@@ -50,7 +54,6 @@ export default function AdminPage() {
   async function handleAdd(user_id: string, trainer_id: string) {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-
     const res = await fetch('/api/admin/assignments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
@@ -63,13 +66,31 @@ export default function AdminPage() {
   async function handleRemove(assignmentId: string) {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-
     const res = await fetch(`/api/admin/assignments/${assignmentId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${session.access_token}` },
     })
     const json = await res.json()
     if (json.success) setAssignments(a => a.filter(x => x.id !== assignmentId))
+  }
+
+  async function handleRename(profileId: string) {
+    const name = editName.trim()
+    if (!name) return
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const res = await fetch(`/api/admin/users/${profileId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ name }),
+    })
+    const json = await res.json()
+    if (json.success) {
+      setUsers(u => u.map(p => p.id === profileId ? { ...p, name } : p))
+      setTrainers(t => t.map(p => p.id === profileId ? { ...p, name } : p))
+      setAdmins(a => a.map(p => p.id === profileId ? { ...p, name } : p))
+      setEditingId(null)
+    }
   }
 
   if (!ready) return <Spinner />
@@ -95,14 +116,39 @@ export default function AdminPage() {
           const userAssignments = assignments.filter(a => a.user_id === user.id)
           const assignedTrainerIds = new Set(userAssignments.map(a => a.trainer_id))
           const available = trainers.filter(t => !assignedTrainerIds.has(t.id))
+          const isEditing = editingId === user.id
 
           return (
             <div key={user.id} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <Avatar style={user.avatar_style} seed={user.avatar_seed} name={user.name} size={40} />
-                <div>
-                  <p className="font-medium">{user.name}</p>
-                  <p className="text-sm text-gray-400">{user.email}</p>
+                <div className="flex-1 min-w-0">
+                  {isEditing ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        autoFocus
+                        value={editName}
+                        onChange={e => setEditName(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleRename(user.id)
+                          if (e.key === 'Escape') setEditingId(null)
+                        }}
+                        className="border border-gray-300 rounded px-2 py-0.5 text-sm font-medium w-40 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      />
+                      <button onClick={() => handleRename(user.id)} className="text-green-600 hover:text-green-700 text-sm">✓</button>
+                      <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-red-500 text-sm">✕</button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate">{user.name}</p>
+                      <button
+                        onClick={() => { setEditingId(user.id); setEditName(user.name) }}
+                        className="text-gray-300 hover:text-gray-600 text-xs"
+                        aria-label="Edit name"
+                      >✎</button>
+                    </div>
+                  )}
+                  <p className="text-sm text-gray-400 truncate">{user.email}</p>
                 </div>
               </div>
 
@@ -150,6 +196,96 @@ export default function AdminPage() {
             </div>
           )
         })}
+
+        {trainers.length > 0 && (
+          <>
+            <h2 className="text-lg font-semibold pt-4">Trainers</h2>
+            {trainers.map(trainer => {
+              const isEditing = editingId === trainer.id
+              return (
+                <div key={trainer.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar style={trainer.avatar_style} seed={trainer.avatar_seed} name={trainer.name} size={40} />
+                    <div className="flex-1 min-w-0">
+                      {isEditing ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            autoFocus
+                            value={editName}
+                            onChange={e => setEditName(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleRename(trainer.id)
+                              if (e.key === 'Escape') setEditingId(null)
+                            }}
+                            className="border border-gray-300 rounded px-2 py-0.5 text-sm font-medium w-40 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          />
+                          <button onClick={() => handleRename(trainer.id)} className="text-green-600 hover:text-green-700 text-sm">✓</button>
+                          <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-red-500 text-sm">✕</button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium truncate">{trainer.name}</p>
+                          <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Trainer</span>
+                          <button
+                            onClick={() => { setEditingId(trainer.id); setEditName(trainer.name) }}
+                            className="text-gray-300 hover:text-gray-600 text-xs"
+                            aria-label="Edit name"
+                          >✎</button>
+                        </div>
+                      )}
+                      <p className="text-sm text-gray-400 truncate">{trainer.email}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </>
+        )}
+
+        {admins.length > 0 && (
+          <>
+            <h2 className="text-lg font-semibold pt-4">Admins</h2>
+            {admins.map(admin => {
+              const isEditing = editingId === admin.id
+              return (
+                <div key={admin.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar style={admin.avatar_style} seed={admin.avatar_seed} name={admin.name} size={40} />
+                    <div className="flex-1 min-w-0">
+                      {isEditing ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            autoFocus
+                            value={editName}
+                            onChange={e => setEditName(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleRename(admin.id)
+                              if (e.key === 'Escape') setEditingId(null)
+                            }}
+                            className="border border-gray-300 rounded px-2 py-0.5 text-sm font-medium w-40 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          />
+                          <button onClick={() => handleRename(admin.id)} className="text-green-600 hover:text-green-700 text-sm">✓</button>
+                          <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-red-500 text-sm">✕</button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium truncate">{admin.name}</p>
+                          <span className="text-xs font-medium bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Admin</span>
+                          <button
+                            onClick={() => { setEditingId(admin.id); setEditName(admin.name) }}
+                            className="text-gray-300 hover:text-gray-600 text-xs"
+                            aria-label="Edit name"
+                          >✎</button>
+                        </div>
+                      )}
+                      <p className="text-sm text-gray-400 truncate">{admin.email}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </>
+        )}
       </div>
 
       <BottomNav />
