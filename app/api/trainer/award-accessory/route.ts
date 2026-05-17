@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { createServerClient } from '@/lib/supabase-server'
+import { calculateExpiration } from '@/lib/accessories'
 
 const schema = z.object({
   userId: z.string().uuid(),
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
     user_id: userId,
     accessory_id: accessoryId,
     awarded_by: user.id,
+    expires_at: calculateExpiration().toISOString(),
   })
 
   if (error) {

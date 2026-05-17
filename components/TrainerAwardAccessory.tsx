@@ -3,12 +3,6 @@
 import { useState } from 'react'
 import type { Accessory } from '@/lib/accessories'
 
-const RARITY_COLORS: Record<string, string> = {
-  common: 'bg-gray-100 text-gray-600',
-  rare: 'bg-blue-100 text-blue-700',
-  legendary: 'bg-yellow-100 text-yellow-700',
-}
-
 interface Props {
   userId: string
   accessories: Accessory[]
@@ -46,7 +40,7 @@ export default function TrainerAwardAccessory({ userId, accessories, token }: Pr
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
-      <h3 className="font-semibold text-sm">Award Accessory</h3>
+      <h3 className="font-semibold text-sm">Award Accessory <span className="text-gray-400 font-normal">(7 days)</span></h3>
 
       <div className="grid grid-cols-3 gap-3">
         {accessories.map((a) => (
@@ -61,9 +55,7 @@ export default function TrainerAwardAccessory({ userId, accessories, token }: Pr
           >
             <img src={a.svg_url} alt={a.name} className="w-12 h-12" />
             <span className="text-xs font-medium">{a.name}</span>
-            <span className={`text-xs px-1.5 py-0.5 rounded-full capitalize ${RARITY_COLORS[a.rarity] ?? RARITY_COLORS.common}`}>
-              {a.rarity}
-            </span>
+            <span className="text-xs text-gray-400">7 days</span>
           </button>
         ))}
       </div>

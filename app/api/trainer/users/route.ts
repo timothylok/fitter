@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
         .from('workouts')
         .select('user_id, date')
         .gte('date', new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]),
-      admin.from('user_accessories').select('user_id, accessory_id'),
-      admin.from('avatar_accessories').select('id, name, svg_url, rarity'),
+      admin.from('user_accessories').select('user_id, accessory_id').gt('expires_at', new Date().toISOString()),
+      admin.from('avatar_accessories').select('id, name, svg_url'),
     ])
 
   const accMap = new Map((allAccs ?? []).map(a => [a.id, a]))

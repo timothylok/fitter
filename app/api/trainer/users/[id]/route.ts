@@ -26,8 +26,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const [{ data: profile }, { data: rawUserAccs }, { data: allAccs }] = await Promise.all([
     admin.from('profiles').select('name, avatar_style, avatar_seed').eq('id', userId).single(),
-    admin.from('user_accessories').select('accessory_id').eq('user_id', userId),
-    admin.from('avatar_accessories').select('id, name, svg_url, rarity'),
+    admin.from('user_accessories').select('accessory_id').eq('user_id', userId).gt('expires_at', new Date().toISOString()),
+    admin.from('avatar_accessories').select('id, name, svg_url'),
   ])
 
   const accMap = new Map((allAccs ?? []).map(a => [a.id, a]))
