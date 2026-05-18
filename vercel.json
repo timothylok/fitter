@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/expire-accessories",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/queue-weekly-reports",
+      "schedule": "5 12 * * SUN"
+    },
+    {
+      "path": "/api/cron/weekly-report-worker",
+      "schedule": "*/2 * * * *"
     }
   ]
 }
