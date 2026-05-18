@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/queue-weekly-reports",
-      "schedule": "5 12 * * SUN"
+      "schedule": "5 12 * * 0"
     },
     {
       "path": "/api/cron/weekly-report-worker",
