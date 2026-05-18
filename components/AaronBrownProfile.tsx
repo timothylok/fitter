@@ -4,11 +4,11 @@ const AaronBrownProfile = () => {
   return (
     <div className="min-h-screen bg-[#0A1428] text-white pb-20 font-sans">
       {/* Hero Section */}
-      <div className="relative h-[420px]">
+      <div className="relative h-[420px] md:h-[520px]">
         <img
           src="/images/aaron-brown-hero.jpg"
           alt="Aaron Brown Training"
-          className="w-full h-full object-cover brightness-75"
+          className="w-full h-full object-cover object-[50%_40%] brightness-75"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-[#0A1428]" />
 
