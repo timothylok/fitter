@@ -5,9 +5,10 @@ export async function register() {
 }
 
 export async function onRequestError(
-  err: Error,
-  request: { method: string; url: string }
+  err: unknown,
+  request: { path: string; method: string; headers: NodeJS.Dict<string | string[]> },
+  context: { routerKind: string; routePath: string; routeType: string }
 ) {
   const { captureRequestError } = await import('@sentry/nextjs')
-  captureRequestError(err, request)
+  captureRequestError(err, request, context)
 }
