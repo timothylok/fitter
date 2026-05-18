@@ -45,9 +45,22 @@ export default function LoginPage() {
   if (sent) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-sm w-full text-center space-y-2 px-4">
-          <h1 className="text-2xl font-semibold">Check your email</h1>
-          <p className="text-gray-500">We sent a magic link to <strong>{email}</strong></p>
+        <div className="max-w-sm w-full space-y-6 px-4">
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-semibold">Check your email</h1>
+            <p className="text-gray-500">We sent a magic link to <strong>{email}</strong></p>
+          </div>
+
+          <div className="border border-gray-200 rounded-lg p-4 bg-white space-y-2 text-sm text-gray-600">
+            <p className="font-medium text-gray-800">Not seeing it?</p>
+            <p>Check your spam folder. If you use Outlook, add these to Safe Senders:</p>
+            <p className="text-gray-500 text-xs">Settings → Mail → Junk email → Safe senders</p>
+            <ul className="space-y-1 mt-1">
+              <li className="font-mono text-xs bg-gray-50 rounded px-2 py-1">resend.com</li>
+              <li className="font-mono text-xs bg-gray-50 rounded px-2 py-1">fittertrack.com</li>
+              <li className="font-mono text-xs bg-gray-50 rounded px-2 py-1">tim@fittertrack.com</li>
+            </ul>
+          </div>
         </div>
       </main>
     )
