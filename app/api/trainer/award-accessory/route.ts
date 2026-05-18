@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { createServerClient } from '@/lib/supabase-server'
 import { calculateExpiration } from '@/lib/accessories'
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
   })
 
   if (error) {
+    Sentry.captureException(error, { extra: { userId, accessoryId } })
     console.error('[POST /api/trainer/award-accessory]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
