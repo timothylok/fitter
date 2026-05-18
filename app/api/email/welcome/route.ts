@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { createServerClient } from '@/lib/supabase-server'
 import { resend } from '@/lib/resend'
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
     .select('email, name')
 
   if (error) {
+    Sentry.captureException(error)
     console.error('[POST /api/email/welcome] db error', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
@@ -48,6 +50,7 @@ export async function POST(request: NextRequest) {
   })
 
   if (sendError) {
+    Sentry.captureException(sendError)
     console.error('[POST /api/email/welcome] resend error', sendError)
     return NextResponse.json({ success: false, error: sendError.message }, { status: 500 })
   }

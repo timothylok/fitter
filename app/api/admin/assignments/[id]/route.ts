@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { createServerClient } from '@/lib/supabase-server'
 
@@ -31,6 +32,7 @@ export async function DELETE(
   const { error } = await admin.from('trainer_assignments').delete().eq('id', id)
 
   if (error) {
+    Sentry.captureException(error)
     console.error('[DELETE /api/admin/assignments/[id]]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }

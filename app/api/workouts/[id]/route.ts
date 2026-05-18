@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import * as Sentry from '@sentry/nextjs'
 import { createServerClient } from '@/lib/supabase-server'
 
 const updateSchema = z.object({
@@ -45,6 +46,7 @@ export async function PUT(
     .single()
 
   if (error) {
+    Sentry.captureException(error)
     console.error('[PUT /api/workouts/[id]]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
@@ -70,6 +72,7 @@ export async function DELETE(
     .eq('user_id', user.id)
 
   if (error) {
+    Sentry.captureException(error)
     console.error('[DELETE /api/workouts/[id]]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }

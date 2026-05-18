@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import * as Sentry from '@sentry/nextjs'
 import { createServerClient } from '@/lib/supabase-server'
 
 const workoutSchema = z.object({
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await query
   if (error) {
+    Sentry.captureException(error)
     console.error('[GET /api/workouts]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
@@ -63,6 +65,7 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (error) {
+    Sentry.captureException(error)
     console.error('[POST /api/workouts]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }

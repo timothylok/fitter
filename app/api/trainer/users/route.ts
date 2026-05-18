@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { createServerClient } from '@/lib/supabase-server'
 
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
   const accMap = new Map((allAccs ?? []).map(a => [a.id, a]))
 
   if (usersError || workoutsError) {
+    Sentry.captureException(usersError ?? workoutsError)
     console.error('[GET /api/trainer/users]', usersError ?? workoutsError)
     return NextResponse.json({ success: false, error: 'Failed to fetch data' }, { status: 500 })
   }

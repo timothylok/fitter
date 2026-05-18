@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { createServerClient } from '@/lib/supabase-server'
 
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (error) {
+    Sentry.captureException(error)
     console.error('[POST /api/admin/assignments]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }

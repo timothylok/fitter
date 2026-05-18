@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase-admin'
 
 export async function GET() {
@@ -9,6 +10,7 @@ export async function GET() {
     .order('name')
 
   if (error) {
+    Sentry.captureException(error)
     console.error('[GET /api/accessories]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }

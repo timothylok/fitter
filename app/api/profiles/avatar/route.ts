@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import * as Sentry from '@sentry/nextjs'
 import { createServerClient } from '@/lib/supabase-server'
 
 const schema = z.object({
@@ -33,6 +34,7 @@ export async function PATCH(request: NextRequest) {
     .eq('id', user.id)
 
   if (error) {
+    Sentry.captureException(error)
     console.error('[PATCH /api/profiles/avatar]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }

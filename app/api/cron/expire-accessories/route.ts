@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase-admin'
 
 export async function GET(req: NextRequest) {
@@ -14,6 +15,7 @@ export async function GET(req: NextRequest) {
     .lt('expires_at', new Date().toISOString())
 
   if (error) {
+    Sentry.captureException(error)
     console.error('[cron/expire-accessories]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
