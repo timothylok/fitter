@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import SentryInit from "@/components/SentryInit";
@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Fitter",
   description: "Multi-user workout tracker",
+};
+
+export const viewport: Viewport = {
   themeColor: "#000000",
 };
 
