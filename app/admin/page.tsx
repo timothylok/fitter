@@ -22,6 +22,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   useEffect(() => {
     async function init() {
@@ -74,6 +75,24 @@ export default function AdminPage() {
     if (json.success) setAssignments(a => a.filter(x => x.id !== assignmentId))
   }
 
+  async function handleDeleteUser(userId: string) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+    const json = await res.json()
+    if (json.success) {
+      setUsers(u => u.filter(p => p.id !== userId))
+      setAssignments(a => a.filter(x => x.user_id !== userId))
+      setConfirmDeleteId(null)
+    } else {
+      setError(json.error)
+      setConfirmDeleteId(null)
+    }
+  }
+
   async function handleRename(profileId: string) {
     const name = editName.trim()
     if (!name) return
@@ -118,6 +137,8 @@ export default function AdminPage() {
           const available = trainers.filter(t => !assignedTrainerIds.has(t.id))
           const isEditing = editingId === user.id
 
+          const isConfirmingDelete = confirmDeleteId === user.id
+
           return (
             <div key={user.id} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
               <div className="flex items-center gap-3">
@@ -138,6 +159,12 @@ export default function AdminPage() {
                       <button onClick={() => handleRename(user.id)} className="text-green-600 hover:text-green-700 text-sm">✓</button>
                       <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-red-500 text-sm">✕</button>
                     </div>
+                  ) : isConfirmingDelete ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-700">Remove <span className="font-medium">{user.name}</span>?</span>
+                      <button onClick={() => handleDeleteUser(user.id)} className="text-red-600 hover:text-red-700 text-sm font-medium">Remove</button>
+                      <button onClick={() => setConfirmDeleteId(null)} className="text-gray-400 hover:text-gray-600 text-sm">Cancel</button>
+                    </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       <p className="font-medium truncate">{user.name}</p>
@@ -146,6 +173,11 @@ export default function AdminPage() {
                         className="text-gray-300 hover:text-gray-600 text-xs"
                         aria-label="Edit name"
                       >✎</button>
+                      <button
+                        onClick={() => setConfirmDeleteId(user.id)}
+                        className="text-gray-300 hover:text-red-500 text-xs"
+                        aria-label="Remove user"
+                      >🗑</button>
                     </div>
                   )}
                   <p className="text-sm text-gray-400 truncate">{user.email}</p>
