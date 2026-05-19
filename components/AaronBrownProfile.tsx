@@ -1,3 +1,5 @@
+'use client'
+
 import { Star, Award, Calendar, MessageCircle } from 'lucide-react'
 
 interface Props { heroImageUrl: string; avatarUrl: string }
