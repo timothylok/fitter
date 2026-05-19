@@ -6,7 +6,7 @@ const AaronBrownProfile = () => {
       {/* Hero Section */}
       <div className="relative h-[420px] md:h-[520px]">
         <img
-          src="/images/aaron-brown-hero.jpg"
+          src="/images/aaron-brown-hero-2.jpg"
           alt="Aaron Brown Training"
           className="w-full h-full object-cover object-top brightness-75"
         />
