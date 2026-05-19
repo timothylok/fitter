@@ -7,7 +7,7 @@ export default function WelcomeEmail(): string {
       <p style="font-size:15px;line-height:1.6;margin:0 0 12px;">Thanks for signing up &#8212; I&#8217;m excited to have you here.</p>
       <p style="font-size:15px;line-height:1.6;margin:0 0 12px;">I built fittertrack.com after seeing so many people still using paper forms to track workouts. This app is designed to be simple, secure, and genuinely helpful.</p>
       <p style="font-size:15px;line-height:1.6;margin:16px 0 12px;">
-        &#8226; No passwords &#8212; you&#8217;ll receive a one&#8209;time magic link each time<br>
+        &#8226; No passwords &#8212; you&#8217;ll receive a one&#8209;time login code each time<br>
         &#8226; Privacy&#8209;first &#8212; no personal details stored<br>
         &#8226; Easy workout tracking<br>
         &#8226; Trainer&#8209;friendly (reports coming soon)<br>
