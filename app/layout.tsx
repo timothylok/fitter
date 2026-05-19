@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import SentryInit from "@/components/SentryInit";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import "./globals.css";
@@ -39,6 +40,7 @@ export default function RootLayout({
         <ServiceWorkerRegistration />
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
