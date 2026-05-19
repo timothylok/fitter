@@ -34,6 +34,9 @@ export default function DashboardPage() {
   const [kpis, setKpis] = useState<WeeklyKPIs | null>(null)
   const [trend, setTrend] = useState<{ label: string; volume: number }[]>([])
   const [accessories, setAccessories] = useState<Accessory[]>([])
+  const [recentExercises, setRecentExercises] = useState<{ name: string; sets: number }[]>([])
+  const [todayFeeling, setTodayFeeling] = useState<string | null>(null)
+  const [workedOutToday, setWorkedOutToday] = useState(false)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -41,10 +44,12 @@ export default function DashboardPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.replace('/login'); return }
 
-      const [{ data: prof }, workoutsRes, accs] = await Promise.all([
+      const today = new Date().toISOString().split('T')[0]
+      const [{ data: prof }, workoutsRes, accs, feelingRes] = await Promise.all([
         supabase.from('profiles').select('name, goal_template, avatar_style, avatar_seed').eq('id', session.user.id).single(),
         fetch('/api/workouts', { headers: { Authorization: `Bearer ${session.access_token}` } }),
         fetchUserAccessories(session.user.id, supabase),
+        fetch(`/api/workout-feelings?date=${today}`, { headers: { Authorization: `Bearer ${session.access_token}` } }),
       ])
       setAccessories(accs)
 
@@ -55,11 +60,21 @@ export default function DashboardPage() {
       if (json.success) {
         const allWorkouts: Workout[] = json.data
         const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
-        const today = new Date().toISOString().split('T')[0]
         const thisWeek = allWorkouts.filter(w => w.date >= weekAgo && w.date <= today)
         setKpis(computeWeeklyKPIs(thisWeek, prof.goal_template))
         setTrend(computeWeeklyTrend(allWorkouts))
+        setWorkedOutToday(allWorkouts.some(w => w.date === today))
+
+        const lastDate = allWorkouts[0]?.date
+        if (lastDate) {
+          setRecentExercises(
+            allWorkouts.filter(w => w.date === lastDate).slice(0, 3).map(w => ({ name: w.exercise_name, sets: w.sets }))
+          )
+        }
       }
+
+      const feelingJson = await feelingRes.json()
+      if (feelingJson.success) setTodayFeeling(feelingJson.data?.feeling ?? null)
       setReady(true)
     }
     init()
@@ -68,6 +83,18 @@ export default function DashboardPage() {
   if (!ready) return <Spinner />
 
   const goalLabel = profile?.goal_template ? GOAL_LABELS[profile.goal_template] : 'No goal set'
+
+  async function saveFeeling(feeling: string) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    setTodayFeeling(feeling)
+    const today = new Date().toISOString().split('T')[0]
+    await fetch('/api/workout-feelings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ date: today, feeling }),
+    })
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
@@ -114,6 +141,52 @@ export default function DashboardPage() {
               </div>
             </div>
           </>
+        )}
+
+        {recentExercises.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <p className="text-sm font-medium mb-1">Recent exercises</p>
+            <p className="text-xs text-gray-400 mb-3">From your last workout</p>
+            <ul className="space-y-2">
+              {recentExercises.map((ex) => (
+                <li key={ex.name} className="flex justify-between text-sm">
+                  <span className="font-medium">{ex.name}</span>
+                  <span className="text-gray-400">{ex.sets} sets</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {workedOutToday && (
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <p className="text-sm font-medium mb-1">How did it feel?</p>
+            {todayFeeling ? (
+              <p className="text-sm text-gray-400">
+                {todayFeeling === 'too_hard' ? '😰 Too Hard' : todayFeeling === 'just_right' ? '😊 Just Right' : '💪 Crushed It'}
+              </p>
+            ) : (
+              <>
+                <p className="text-xs text-gray-400 mb-3">Rate your session</p>
+                <div className="flex gap-3">
+                  {([
+                    { value: 'too_hard', emoji: '😰', label: 'Too Hard' },
+                    { value: 'just_right', emoji: '😊', label: 'Just Right' },
+                    { value: 'crushed_it', emoji: '💪', label: 'Crushed It' },
+                  ] as const).map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => saveFeeling(opt.value)}
+                      className="flex-1 rounded-xl border border-gray-200 p-3 text-center hover:border-gray-900 transition-colors"
+                    >
+                      <div className="text-2xl mb-1">{opt.emoji}</div>
+                      <div className="text-xs font-medium">{opt.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         )}
 
         <div className="bg-white rounded-xl border border-gray-200 p-4">
