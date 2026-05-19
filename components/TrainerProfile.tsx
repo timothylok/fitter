@@ -1,12 +1,14 @@
-import { Star, Award, Users, Calendar, MessageCircle } from 'lucide-react'
+import { Star, Award, Calendar, MessageCircle } from 'lucide-react'
 
-const TrainerProfile = () => {
+interface Props { heroImageUrl: string; avatarUrl: string }
+
+const TrainerProfile = ({ heroImageUrl, avatarUrl }: Props) => {
   return (
     <div className="min-h-screen bg-[#0A1428] text-white pb-20">
       {/* Hero Section */}
       <div className="relative h-[380px]">
         <img
-          src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800"
+          src={heroImageUrl}
           alt="Jordan Kane training"
           className="w-full h-full object-cover"
         />
@@ -15,7 +17,7 @@ const TrainerProfile = () => {
         {/* Avatar */}
         <div className="absolute -bottom-16 left-6 border-4 border-[#0A1428] rounded-3xl overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=300"
+            src={avatarUrl}
             alt="Jordan Kane"
             className="w-32 h-32 object-cover"
           />

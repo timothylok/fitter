@@ -1,12 +1,14 @@
 import { Star, Award, Calendar, MessageCircle } from 'lucide-react'
 
-const AaronBrownProfile = () => {
+interface Props { heroImageUrl: string; avatarUrl: string }
+
+const AaronBrownProfile = ({ heroImageUrl, avatarUrl }: Props) => {
   return (
     <div className="min-h-screen bg-[#0A1428] text-white pb-20 font-sans">
       {/* Hero Section */}
       <div className="relative h-[420px] md:h-[520px]">
         <img
-          src="/images/aaron-brown-hero-2.jpg"
+          src={heroImageUrl}
           alt="Aaron Brown Training"
           className="w-full h-full object-cover object-top brightness-75"
         />
@@ -15,7 +17,7 @@ const AaronBrownProfile = () => {
         {/* Enhanced Avatar */}
         <div className="absolute -bottom-16 left-6 border-4 border-[#0A1428] rounded-3xl overflow-hidden shadow-2xl">
           <img
-            src="/images/aaron-brown-avatar.jpg"
+            src={avatarUrl}
             alt="Aaron Brown"
             className="w-36 h-36 object-cover"
           />
