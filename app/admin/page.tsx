@@ -18,6 +18,7 @@ export default function AdminPage() {
   const [trainers, setTrainers] = useState<Profile[]>([])
   const [admins, setAdmins] = useState<Profile[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -36,6 +37,7 @@ export default function AdminPage() {
         .single()
 
       if (prof?.role !== 'admin') { router.replace('/dashboard'); return }
+      setCurrentUserId(session.user.id)
 
       const res = await fetch('/api/admin/assignments', {
         headers: { Authorization: `Bearer ${session.access_token}` },
@@ -112,6 +114,31 @@ export default function AdminPage() {
     }
   }
 
+  async function handleRoleChange(profileId: string, fromRole: 'user' | 'trainer' | 'admin', toRole: string) {
+    if (fromRole === toRole) return
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const res = await fetch(`/api/admin/users/${profileId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ role: toRole }),
+    })
+    const json = await res.json()
+    if (!json.success) { setError(json.error); return }
+
+    const listMap = { user: users, trainer: trainers, admin: admins } as const
+    const setterMap = { user: setUsers, trainer: setTrainers, admin: setAdmins } as const
+    const profile = listMap[fromRole].find(p => p.id === profileId)
+    if (!profile) return
+
+    setterMap[fromRole](prev => prev.filter(p => p.id !== profileId))
+    setterMap[toRole as keyof typeof setterMap](prev =>
+      [...prev, profile].sort((a, b) => a.name.localeCompare(b.name))
+    )
+    if (fromRole === 'user') setAssignments(a => a.filter(x => x.user_id !== profileId))
+    if (toRole === 'user') setAssignments(a => a.filter(x => x.trainer_id !== profileId))
+  }
+
   if (!ready) return <Spinner />
 
   return (
@@ -166,8 +193,17 @@ export default function AdminPage() {
                       <button onClick={() => setConfirmDeleteId(null)} className="text-gray-400 hover:text-gray-600 text-sm">Cancel</button>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium truncate">{user.name}</p>
+                      <select
+                        value="user"
+                        onChange={e => handleRoleChange(user.id, 'user', e.target.value)}
+                        className="text-xs border border-gray-200 rounded px-1.5 py-0.5 text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                      >
+                        <option value="user">User</option>
+                        <option value="trainer">Trainer</option>
+                        <option value="admin">Admin</option>
+                      </select>
                       <button
                         onClick={() => { setEditingId(user.id); setEditName(user.name) }}
                         className="text-gray-300 hover:text-gray-600 text-xs"
@@ -255,9 +291,17 @@ export default function AdminPage() {
                           <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-red-500 text-sm">✕</button>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-medium truncate">{trainer.name}</p>
-                          <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Trainer</span>
+                          <select
+                            value="trainer"
+                            onChange={e => handleRoleChange(trainer.id, 'trainer', e.target.value)}
+                            className="text-xs border border-gray-200 rounded px-1.5 py-0.5 text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                          >
+                            <option value="user">User</option>
+                            <option value="trainer">Trainer</option>
+                            <option value="admin">Admin</option>
+                          </select>
                           <button
                             onClick={() => { setEditingId(trainer.id); setEditName(trainer.name) }}
                             className="text-gray-300 hover:text-gray-600 text-xs"
@@ -300,9 +344,18 @@ export default function AdminPage() {
                           <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-red-500 text-sm">✕</button>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-medium truncate">{admin.name}</p>
-                          <span className="text-xs font-medium bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Admin</span>
+                          <select
+                            value="admin"
+                            disabled={admin.id === currentUserId}
+                            onChange={e => handleRoleChange(admin.id, 'admin', e.target.value)}
+                            className="text-xs border border-gray-200 rounded px-1.5 py-0.5 text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <option value="user">User</option>
+                            <option value="trainer">Trainer</option>
+                            <option value="admin">Admin</option>
+                          </select>
                           <button
                             onClick={() => { setEditingId(admin.id); setEditName(admin.name) }}
                             className="text-gray-300 hover:text-gray-600 text-xs"
