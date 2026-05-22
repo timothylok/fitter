@@ -25,18 +25,43 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
   }
 
-  const [{ data: users, error: usersError }, { data: workouts, error: workoutsError }, { data: rawUserAccs }, { data: allAccs }] =
-    await Promise.all([
-      admin.from('profiles').select('id, name, email, goal_template, avatar_style, avatar_seed'),
-      admin
-        .from('workouts')
-        .select('user_id, date')
-        .gte('date', new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]),
-      admin.from('user_accessories').select('user_id, accessory_id').gt('expires_at', new Date().toISOString()),
-      admin.from('avatar_accessories').select('id, name, svg_url'),
-    ])
+  const todayIso = new Date().toISOString().split('T')[0]
+  const todayStart = `${todayIso}T00:00:00.000Z`
+  const todayEnd = `${todayIso}T23:59:59.999Z`
+
+  const [
+    { data: users, error: usersError },
+    { data: workouts, error: workoutsError },
+    { data: rawUserAccs },
+    { data: allAccs },
+    { data: todayMeals },
+    { data: targets },
+  ] = await Promise.all([
+    admin.from('profiles').select('id, name, email, goal_template, avatar_style, avatar_seed'),
+    admin
+      .from('workouts')
+      .select('user_id, date')
+      .gte('date', new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]),
+    admin.from('user_accessories').select('user_id, accessory_id').gt('expires_at', new Date().toISOString()),
+    admin.from('avatar_accessories').select('id, name, svg_url'),
+    admin.from('meals').select('id, user_id, meal_items(calories)').gte('created_at', todayStart).lte('created_at', todayEnd),
+    admin.from('user_daily_targets').select('user_id, calorie_target').order('updated_at', { ascending: false }),
+  ])
 
   const accMap = new Map((allAccs ?? []).map(a => [a.id, a]))
+
+  // calories consumed today per user
+  const caloriesToday = new Map<string, number>()
+  for (const meal of (todayMeals ?? []) as { id: string; user_id: string; meal_items: { calories: number }[] }[]) {
+    const sum = (meal.meal_items ?? []).reduce((s, i) => s + i.calories, 0)
+    caloriesToday.set(meal.user_id, (caloriesToday.get(meal.user_id) ?? 0) + sum)
+  }
+
+  // latest calorie target per user (first row per user_id after ordering desc)
+  const targetMap = new Map<string, number>()
+  for (const t of (targets ?? []) as { user_id: string; calorie_target: number }[]) {
+    if (!targetMap.has(t.user_id)) targetMap.set(t.user_id, t.calorie_target)
+  }
 
   if (usersError || workoutsError) {
     Sentry.captureException(usersError ?? workoutsError)
@@ -60,7 +85,9 @@ export async function GET(request: NextRequest) {
       .filter(a => a.user_id === u.id)
       .map(a => accMap.get(a.accessory_id))
       .filter(Boolean)
-    return { id: u.id, name: u.name, email: u.email, goal_template: u.goal_template, avatar_style: u.avatar_style, avatar_seed: u.avatar_seed, sessionsThisWeek, lastWorkout, atRisk, accessories }
+    const caloriesTodayVal = Math.round(caloriesToday.get(u.id) ?? 0)
+    const calorieTarget = targetMap.has(u.id) ? Math.round(targetMap.get(u.id)!) : null
+    return { id: u.id, name: u.name, email: u.email, goal_template: u.goal_template, avatar_style: u.avatar_style, avatar_seed: u.avatar_seed, sessionsThisWeek, lastWorkout, atRisk, accessories, caloriesToday: caloriesTodayVal, calorieTarget }
   })
 
   return NextResponse.json({ success: true, data })

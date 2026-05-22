@@ -22,6 +22,8 @@ interface ClientRow {
   sessionsThisWeek: number
   lastWorkout: string | null
   atRisk: boolean
+  caloriesToday: number
+  calorieTarget: number | null
 }
 
 const GOAL_LABELS: Record<GoalTemplate, string> = {
@@ -109,9 +111,15 @@ export default function TrainerPage() {
                 </div>
 
                 <div className="flex items-end justify-between mt-3">
-                  <div className="flex gap-6 text-sm">
+                  <div className="flex gap-6 text-sm flex-wrap">
                     <Stat label="Sessions this week" value={c.sessionsThisWeek} />
                     <Stat label="Last workout" value={c.lastWorkout ?? 'Never'} />
+                    <Stat
+                      label="Today's calories"
+                      value={c.calorieTarget
+                        ? `${c.caloriesToday} / ${c.calorieTarget} kcal`
+                        : c.caloriesToday > 0 ? `${c.caloriesToday} kcal` : 'No log'}
+                    />
                   </div>
                   <button
                     onClick={() => router.push(`/trainer/users/${c.id}/award`)}

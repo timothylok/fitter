@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 const TABS = [
   { href: '/dashboard', label: 'Home', icon: '⊞' },
   { href: '/workouts', label: 'Workouts', icon: '↑' },
+  { href: '/nutrition', label: 'Nutrition', icon: '◑' },
   { href: '/goals', label: 'Goals', icon: '◎' },
   { href: '/profile', label: 'Profile', icon: '○' },
 ]

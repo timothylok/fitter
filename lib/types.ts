@@ -35,3 +35,50 @@ export interface WeeklyKPIs {
   streak: number
   goalProgress: number
 }
+
+export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'very_active' | 'athlete'
+
+export interface UserDailyTarget {
+  id: string
+  user_id: string
+  bmr: number
+  tdee: number
+  calorie_target: number
+  deficit: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Meal {
+  id: string
+  user_id: string
+  meal_type: string
+  raw_input: string
+  source: string
+  created_at: string
+  meal_items?: MealItem[]
+}
+
+export interface MealItem {
+  id: string
+  meal_id: string
+  food_name: string
+  serving_qty: number | null
+  serving_unit: string | null
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  sugar: number | null
+  fiber: number | null
+  brand: string | null
+  created_at: string
+}
+
+export interface DailySummary {
+  total_calories: number
+  total_protein: number
+  total_carbs: number
+  total_fat: number
+  remaining_calories: number
+}
