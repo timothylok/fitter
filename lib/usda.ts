@@ -27,7 +27,14 @@ export async function lookupNutritionUSDA(
     url.searchParams.set('pageSize', '1')
     url.searchParams.set('dataType', 'Foundation,SR Legacy')
 
-    const res = await fetch(url.toString())
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5_000)
+    let res: Response
+    try {
+      res = await fetch(url.toString(), { signal: controller.signal })
+    } finally {
+      clearTimeout(timeout)
+    }
     if (!res.ok) return null
 
     const data: USDASearchResponse = await res.json()
